@@ -14,6 +14,7 @@ It’s designed to be modular, readable, and easily extensible into a fully auto
 ---
 
 ##  Overview
+![Demo](animation.gif)
 
 The script demonstrates how to visualize the evolution of data across time by animating the **Top 10 entities per year (or any time frame)** using `Matplotlib`, `Seaborn`, and `FuncAnimation`.
 

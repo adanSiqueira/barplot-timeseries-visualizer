@@ -158,7 +158,7 @@ def save_animation(df: pd.DataFrame, frames: list | np.ndarray, icons: dict) -> 
 
     anim = FuncAnimation(fig, animate, frames=frames, interval=200)
     print("Saving animation as mp4...")
-    anim.save("animation.mp4", writer="ffmpeg", fps=5)
+    anim.save("animation.mp4", writer="ffmpeg", fps=10)
     print("Animation saved as animation.mp4")
 
 
@@ -202,7 +202,7 @@ def show_animation(df: pd.DataFrame, frames: list | np.ndarray, icons: dict) -> 
         ax.set_title(f"Top 10 Entities - {frame}")
         return []
 
-    anim = FuncAnimation(fig, animate, frames=frames, interval=200)
+    anim = FuncAnimation(fig, animate, frames=frames, interval=100)
     plt.show()
 
 
