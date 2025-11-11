@@ -29,37 +29,37 @@ def setup_plotstyle(ax: plt.Axes) -> None:
     ax.tick_params(axis='y', which='both', left=False, right=False)
 
 
-def setup_year(ax: plt.Axes, year: int) -> None:
+def setup_dt(ax: plt.Axes, dt: int) -> None:
     """
-    Display the current year as a label on the animation plot, placing a year label inside the plot area,
+    Display the current dt on the animation plot, placing a dt inside the plot area,
     aligned to the bottom-right corner of the chart.
 
     Parameters:
     ax : plt.Axes
         The Matplotlib axes object to annotate.
-    year : int
-        The year (or any numeric frame identifier) to display.
+    dt : int
+        The dt (or any numeric frame identifier) to display.
 
     Returns: None
     """
-    ax.text(0.9, 0.05, str(year), transform=ax.transAxes,
+    ax.text(0.9, 0.05, str(dt), transform=ax.transAxes,
             ha='center', color="#0B0101", fontsize=15)
 
 
 def save_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
     """
-    Generate and save a bar chart time series animation as an MP4 file.
+    Generate and save a bar chart dt series animation as an MP4 file.
 
-    For each frame (each year), the function selects the top 10 entities
-    based on a numeric column ('TPopulation1Jan') and animates their evolution
-    over time. The animation is saved using the 'ffmpeg' writer.
+    For each frame (each dt), the function selects the top 10 entities
+    based on a numeric column ('x') and animates their evolution
+    over dt. The animation is saved using the 'ffmpeg' writer.
 
     Parameters:
     df : pd.DataFrame
         A DataFrame containing at least the following columns:
-        - 'Time': used to determine frames.
-        - 'Location': categorical variable (e.g., country names).
-        - 'TPopulation1Jan': numeric variable to visualize.
+        - 'dt': used to determine frames.
+        - 'label': categorical variable (e.g., country names).
+        - 'x': numeric variable to visualize.
     frames : list | np.ndarray
         A list or array of frame identifiers (e.g., years).
 
@@ -69,15 +69,15 @@ def save_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
 
     def animate(frame):
         ax.clear()
-        pop_data_frame = df[df['Time'] == frame]
-        top_countries = pop_data_frame.nlargest(10, 'TPopulation1Jan')
+        pop_data_frame = df[df['dt'] == frame]
+        top_countries = pop_data_frame.nlargest(10, 'x')
         sns.barplot(
-            x='TPopulation1Jan', y='Location', data=top_countries,
-            hue='Location', legend=False, palette='viridis', ax=ax
+            x='x', y='label', data=top_countries,
+            hue='label', legend=False, palette='viridis', ax=ax
         )
         for i, row in top_countries.iterrows():
-            ax.text(row['TPopulation1Jan'], row['Location'],
-                    f'{row["TPopulation1Jan"]:.2f}', va='center', color='black')
+            ax.text(row['x'], row['label'],
+                    f'{row["x"]:.2f}', va='center', color='black')
 
         ax.set_title(f"Top 10 Populations - {frame}")
         return []
@@ -90,16 +90,16 @@ def save_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
 
 def show_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
     """
-    Display an interactive time series bar chart animation.
+    Display an interactive dt series bar chart animation.
 
     This function creates and shows an animated barplot directly in the UI. It is useful for previewing before exporting.
 
     Parameters:
     df : pd.DataFrame
         A DataFrame containing at least the following columns:
-        - 'Time': used to determine frames.
-        - 'Location': categorical variable (e.g., country names).
-        - 'TPopulation1Jan': numeric variable to visualize.
+        - 'dt': used to determine frames.
+        - 'label': categorical variable (e.g., country names).
+        - 'x': numeric variable to visualize.
     frames : list | np.ndarray
         A list or array of frame identifiers (e.g., years).
 
@@ -110,16 +110,16 @@ def show_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
     def animate(frame):
         ax.clear()
         setup_plotstyle(ax)
-        setup_year(ax, frame)
-        pop_data_frame = df[df['Time'] == frame]
-        top_countries = pop_data_frame.nlargest(10, 'TPopulation1Jan')
+        setup_dt(ax, frame)
+        pop_data_frame = df[df['dt'] == frame]
+        top_countries = pop_data_frame.nlargest(10, 'x')
         sns.barplot(
-            x='TPopulation1Jan', y='Location', data=top_countries,
-            hue='Location', legend=False, palette='viridis', ax=ax
+            x='x', y='label', data=top_countries,
+            hue='label', legend=False, palette='viridis', ax=ax
         )
         for i, row in top_countries.iterrows():
-            ax.text(row['TPopulation1Jan'], row['Location'],
-                    f'{row["TPopulation1Jan"]:.2f}', va='center', color='black')
+            ax.text(row['x'], row['label'],
+                    f'{row["x"]:.2f}', va='center', color='black')
         ax.set_title(f"Top 10 Populations - {frame}")
         return []
 
@@ -128,8 +128,8 @@ def show_animation(df: pd.DataFrame, frames: list | np.ndarray) -> None:
 
 
 if __name__ == "__main__":
-    pop_data = pd.read_csv('./data/clean-data.csv')
-    frames = pop_data['Time'].unique().tolist()
+    pop_data = pd.read_csv('./data/clean-formatted-data.csv')
+    frames = pop_data['dt'].unique().tolist()
 
     # Start saving in a background process
     p = Process(target=save_animation, args=(pop_data, frames))
