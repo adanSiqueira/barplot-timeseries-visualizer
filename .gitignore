@@ -1,4 +1,7 @@
 /venv
-test.md
-/README_files
-animation.mp4
+*.env
+*.pyc
+streamlit_app.py
+streamlit_app2.py
+streamlit_app3.py
+test.ipynb
