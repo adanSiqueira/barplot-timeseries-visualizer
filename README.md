@@ -1,4 +1,4 @@
-<h1 align="center">Barplot Time Series Animation Blueprint</h1>
+<h1 align="center">Barplot Time Series Animation Generator</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python Badge"/>
@@ -8,22 +8,35 @@
   <img src="https://img.shields.io/badge/FFmpeg-Video%20Encoding-red?logo=ffmpeg&logoColor=white" alt="FFmpeg Badge"/>
 </p>
 
-This project is a **Python blueprint for creating animated barplot time series visualizations** — similar to the popular “bar chart race” videos.  
-It’s designed to be modular, readable, and easily extensible into a fully automated program where you can simply provide a dataset with two key columns, and generate animations directly.
+<p align="center">
+  <strong> Link:</strong>  
+  <a href="https://barplot-timeseries-animation-generator.streamlit.app/">
+    https://barplot-timeseries-animation-generator.streamlit.app/
+  </a><br>
+  Upload your dataset and icons, and download the resulting MP4 animation.
+</p>
 
 ---
 
 ##  Overview
+This project is a **Streamlit web app** and **Python blueprint** for generating *animated bar chart races* that visualize how top categories evolve over time, similar to the popular **“bar chart race”** videos.
+
+It’s designed to be modular, readable, and easily extensible into a fully automated program where you can simply provide a dataset with three key columns, and generate animations directly.
+
+---
+##  Example
+
 ![Demo](animations/animation.gif)
 
-The script demonstrates how to visualize the evolution of data across time by animating the **Top 10 entities per year (or any time frame)** using `Matplotlib`, `Seaborn`, and `FuncAnimation`.
 
-While this version is focused on population data (countries over years), it serves as a **template** for any time-based ranking visualization, such as:
+The animation showcases the top entities per period (e.g., year), dynamically updating ranks, bars, and optional icons.
+Use it for visualizing:
 
-- Company revenues over years  
-- City populations or temperatures  
-- Product sales over months  
-- Sports statistics (team scores, player performance, etc.)
+* Population growth by country
+* Company revenues by year
+* Product sales by month
+* Sports or performance statistics
+* Any time-based ranking visualization
 
 ---
 
@@ -40,7 +53,7 @@ While this version is focused on population data (countries over years), it serv
 
 ## Requirements
 
-Make sure the following libraries are installed:
+If running locally, sure the following libraries are installed:
 
 ```bash
 pip install -r requirements.txt
@@ -51,7 +64,6 @@ If you want to save animations as `.mp4`, you’ll also need **FFmpeg** installe
 * Windows: [Download FFmpeg](https://ffmpeg.org/download.html)
 * macOS (Homebrew): `brew install ffmpeg`
 * Linux (Debian/Ubuntu): `sudo apt install ffmpeg`
-
 ---
 
 ##  Project Structure
@@ -68,68 +80,67 @@ barplot-timeseries-animation/
 
 ---
 
-## Expected Data Format
+##  Expected Data Format
 
-The script assumes your dataset contains at least these **three columns**:
+Your CSV should include **three columns**:
 
-| Column Name       | Description                           |
-| ----------------- | ------------------------------------- |
-| `Time`            | Year or period of observation         |
-| `TPopulation1Jan` | Value to visualize (e.g. population)  |
-| `Location`        | Category / entity name (e.g. country) |
+| Column  | Description                               |
+| ------- | ----------------------------------------- |
+| `dt`    | Time unit (year, month, etc.)             |
+| `label` | Category name (country, product, etc.)    |
+| `x`     | Numeric value (population, revenue, etc.) |
 
-Example (`clean-data.csv`):
+Example:
 
-| Time | Location | TPopulation1Jan |
-| ---- | -------- | --------------- |
-| 1950 | China    | 554419000       |
-| 1950 | India    | 376325200       |
-| 1950 | USA      | 157813000       |
-| 1951 | China    | 562388000       |
-| 1951 | India    | 382740000       |
-| ...  | ...      | ...             |
-
----
-
-## How It Works
-
-### 1. Load data
-
-```python
-pop_data = pd.read_csv('./data/clean-data.csv')
-frames = pop_data['Time'].unique().tolist()
-```
-
-### 2. Display animation
-
-The animation is shown in a live window (matplotlib GUI):
-
-```python
-show_animation(pop_data, frames)
-```
-
-### 3. Save animation
-
-In parallel, a separate process saves the animation as `animation.mp4`:
-
-```python
-save_animation(pop_data, frames)
-```
-
-This dual-process setup lets you **watch the animation while it’s being rendered and saved**.
+| dt   | label | x         |
+| ---- | ----- | --------- |
+| 1950 | China | 554419000 |
+| 1950 | India | 376325200 |
+| 1950 | USA   | 157813000 |
+| 1951 | China | 562388000 |
+| 1951 | India | 382740000 |
 
 ---
 
-##  Functions Summary
+##  Core Functions (in `main.py`)
 
-| Function                     | Description                                    |
-| ---------------------------- | ---------------------------------------------- |
-| `setup_plotstyle(ax)`        | Applies a clean visual style to the chart      |
-| `setup_year(ax, year)`       | Displays the current year label on the plot    |
-| `save_animation(df, frames)` | Generates and saves the animation as `.mp4`    |
-| `show_animation(df, frames)` | Displays the animation interactively           |
-| `__main__`                   | Runs both visualization and saving in parallel |
+| Function                                       | Description                                     |
+| ---------------------------------------------- | ----------------------------------------------- |
+| `load_icons(df, icon_folder, label_col)`       | Loads and resizes icons corresponding to labels |
+| `add_icons(ax, icons)`                         | Draws icons next to bar labels                  |
+| `draw_frame(ax, df, title, frame, icons, ...)` | Draws each frame of the animation               |
+| `save_animation(df, frames, icons, ...)`       | Saves animation as `.mp4` using FFmpeg          |
+| `show_animation(df, frames, icons, ...)`       | Displays animation interactively                |
 
+---
+
+##  How It Works
+
+### 1. Data is filtered for each frame
+
+```python
+frame_data = df[df['dt'] == frame]
+top_items = frame_data.nlargest(n_largest, 'x')
+```
+
+### 2. Bars are drawn with Seaborn
+
+```python
+sns.barplot(x='x', y='label', data=top_items, palette='viridis', ax=ax)
+```
+
+### 3. Optional icons are attached
+
+```python
+img = icons[label].convert("RGBA")
+imagebox = OffsetImage(img, zoom=0.07)
+```
+
+### 4. Animation saved
+
+```python
+anim.save(os.path.join(output_path, "animation.mp4"), writer="ffmpeg", fps=fps)
+```
 ---
 
 ##  Author
@@ -138,3 +149,5 @@ This dual-process setup lets you **watch the animation while it’s being render
  [GitHub Profile](https://github.com/AdanSiqueira)
 
 ---
+
+If you like this project, don’t forget to ⭐ star the repository to show your support!
