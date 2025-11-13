@@ -13,8 +13,10 @@
   <a href="https://barplot-timeseries-animation-generator.streamlit.app/">
     https://barplot-timeseries-animation-generator.streamlit.app/
   </a><br>
-  Upload your dataset and icons, and download the resulting MP4 animation.
+  Upload your dataset and icons, and <strong>build animations like this:</strong>
 </p>
+
+![Demo](animations/animation.gif)
 
 ---
 
@@ -22,12 +24,6 @@
 This project is a **Streamlit web app** and **Python blueprint** for generating *animated bar chart races* that visualize how top categories evolve over time, similar to the popular **“bar chart race”** videos.
 
 It’s designed to be modular, readable, and easily extensible into a fully automated program where you can simply provide a dataset with three key columns, and generate animations directly.
-
----
-##  Example
-
-![Demo](animations/animation.gif)
-
 
 The animation showcases the top entities per period (e.g., year), dynamically updating ranks, bars, and optional icons.
 Use it for visualizing:
@@ -73,9 +69,11 @@ barplot-timeseries-animation/
 ├── data/
 │   └── clean-data.csv         # Dataset 
 │   └── un-country-data.csv    # Raw data
-├── animation.py               # Main script
+├── main.py                    # Modular script containing all logic functionalities
+├── app.py                     # Streamlit application
 ├── README.md                  # Project documentation
-└── requirements.txt           # Dependencies
+└── requirements.txt           # Python dependencies
+└── packages.txt               # OS Dependencies
 ```
 
 ---
@@ -104,13 +102,16 @@ Example:
 
 ##  Core Functions (in `main.py`)
 
-| Function                                       | Description                                     |
-| ---------------------------------------------- | ----------------------------------------------- |
-| `load_icons(df, icon_folder, label_col)`       | Loads and resizes icons corresponding to labels |
-| `add_icons(ax, icons)`                         | Draws icons next to bar labels                  |
-| `draw_frame(ax, df, title, frame, icons, ...)` | Draws each frame of the animation               |
-| `save_animation(df, frames, icons, ...)`       | Saves animation as `.mp4` using FFmpeg          |
-| `show_animation(df, frames, icons, ...)`       | Displays animation interactively                |
+| Function                                                                                                         | Description                                                                                                       | Key Parameters                                                        | Returns                     |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------- |
+| **`load_icons(df, icon_folder, label_col)`**                                                                     | Loads and resizes `.png` icons for each label (e.g., country flag, logo), returning a mapping from label → image. | `df`, `icon_folder`, `label_col`                                      | `dict` — {label: PIL.Image} |
+| **`add_icons(ax, icons)`**                                                                                       | Places each corresponding icon next to its y-axis label in a horizontal bar chart.                                | `ax`, `icons`                                                         | `None`                      |
+| **`draw_frame(ax, df, title, frame, icons, n_largest, colors, palette)`**                                        | Renders a single frame of the animated chart, showing the top N values for a given time or index.                 | `ax`, `df`, `title`, `frame`, `icons`, `n_largest`, `palette`         | `None`                      |
+| **`setup_plotstyle(ax)`**                                                                                        | Applies a clean, minimal style to a Matplotlib Axes (removes spines and unnecessary ticks).                       | `ax`                                                                  | `None`                      |
+| **`wrap_labels(ax, width)`**                                                                                     | Automatically wraps long y-axis labels into multiple lines to prevent overflow.                                   | `ax`, `width`                                                         | `None`                      |
+| **`setup_dt(ax, dt)`**                                                                                           | Displays the current frame label (e.g., year) within the chart area.                                              | `ax`, `dt`                                                            | `None`                      |
+| **`save_animation(df, frames, icons, file_format, output_path, title, width, height, fps, n_largest, palette)`** | Generates and saves the full animated bar chart as an `.mp4` or `.gif` file using `ffmpeg`.                       | `df`, `frames`, `icons`, `file_format`, `output_path`, `title`, `fps` | `None`                      |
+| **`show_animation(df, frames, icons, title, width, height, fps, n_largest, palette)`**                           | Displays the animation interactively in a Matplotlib window (instead of saving).                                  | `df`, `frames`, `icons`, `title`, `fps`                               | `None`                      |
 
 ---
 
